@@ -1,0 +1,21 @@
+{
+    "extSettings": {
+        "label": "Extensions Settings",
+        "itemList": [
+            "__APPEND__",
+            {
+                "url": "#Admin/DownloadAllAttachments",
+                "iconClass": "fas fa-download",
+                "keywords": [
+                    "attachments",
+                    "extension",
+                    "download"
+                ],
+                "label": "DownloadAllAttachmentsTitle",
+                "description": "DownloadAllAttachmentsDescription",
+            	"recordView": "download-all-attachments:views/admin/settings"
+            }
+        ],
+        "order": 107
+    }
+}

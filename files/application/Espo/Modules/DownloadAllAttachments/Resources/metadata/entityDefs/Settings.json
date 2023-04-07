@@ -1,0 +1,20 @@
+{
+    "fields": {
+        "DownloadAllAttachments": {
+            "type": "bool",
+            "default": true,
+            "tooltip": true
+        },
+        "DownloadAllAttachmentsStream": {
+            "type": "bool",
+            "default": false,
+            "tooltip": true
+        },
+        "DownloadAllAttachmentsMode": {
+            "type": "enum",
+            "options": ["Single", "Zip"],
+            "default": "Zip",
+            "tooltip": true
+        }
+    }
+}

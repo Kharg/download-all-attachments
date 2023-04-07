@@ -1,0 +1,10 @@
+{
+    "scriptList": [
+        "__APPEND__",
+        "client/modules/download-all-attachments/src/download-all-attachments.js"
+    ],
+    "developerModeScriptList": [
+        "__APPEND__",
+        "client/modules/download-all-attachments/src/download-all-attachments.js"
+    ]
+}
