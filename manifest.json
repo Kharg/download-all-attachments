@@ -1,11 +1,11 @@
 {
     "name": "Download All Attachments",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "type": "extension",
     "acceptableVersions": [
         ">=7.2.0"
     ],
-    "releaseDate": "07/04/2023",
+    "releaseDate": "08/04/2023",
     "author": "Andrew Fontana",
     "checkVersionUrl": "www.kharg.eu/checkVersion",
     "description": "Allows to download all attachments from an attachment multiple field easily."

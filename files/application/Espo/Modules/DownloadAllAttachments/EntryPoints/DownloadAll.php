@@ -28,7 +28,7 @@ class DownloadAll implements EntryPoint
     public function run(Request $request, Response $response): void
     {
         $idList = $request->getQueryParams();
-    
+        
         if (!$idList || !is_array($idList)) {
             throw new BadRequest();
         }
@@ -66,8 +66,10 @@ class DownloadAll implements EntryPoint
     
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
             $mimeType = finfo_file($finfo, $filename);
-            $name = basename($filename);
-    
+            $name = $request->getQueryParam('name');
+            $name = preg_replace('/[<>:"\/\\\|\?\*]/', ' ', $name);
+            $name = rtrim($name, ". ");
+
             if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') {
                 $response->setHeader('Cache-Control', 'max-age=120');
                 $response->setHeader('Pragma', 'public');
@@ -77,7 +79,7 @@ class DownloadAll implements EntryPoint
             }
     
             $response->setHeader('Content-Type', $mimeType);
-            $response->setHeader('Content-Disposition', 'attachment; filename="' . $name . '";');
+            $response->setHeader('Content-Disposition', 'attachment; filename="' . $name . '.zip";');
             $response->setHeader('Accept-Ranges', 'bytes');
             $response->setHeader('Content-Length', (string) filesize($filename));
     

@@ -21,10 +21,11 @@ extend('download-all-attachments:extensions/views/fields/attachment-multiple', f
 		},
 
         downloadAllAttachments: function(nameHash) {
+            let filename = this.model.get('name');
             let downloadMode = this.getConfig().get('DownloadAllAttachmentsMode');
             let url = this.getBasePath();
             if (downloadMode === 'Zip') {
-                url += '?entryPoint=DownloadAll';
+                url += '?entryPoint=DownloadAll&name='+filename;
                 let i = 0;
                 for (let id in nameHash) {
                     url += '&id[' + i + ']=' + id;
@@ -34,8 +35,14 @@ extend('download-all-attachments:extensions/views/fields/attachment-multiple', f
             } else {
                 for (let id in nameHash) {
                     let separateUrl = url + '?entryPoint=ForceDownload&id=' + id;
-                    window.open(separateUrl, '_blank');
-                }
+                    let iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.src = separateUrl;
+                    document.body.appendChild(iframe);
+                    iframe.onload = function() {
+                        document.body.removeChild(iframe);
+                      };
+                  }
             }
         },
 
