@@ -10,11 +10,15 @@ This Extension allows to download all the attachments from a multiple attachment
 
 ## Introduction
 
-This extension adds three features to the Attachment Multiple field in EspoCRM: 
+This extension adds two features to the Attachment Multiple field in EspoCRM: 
 
 - display the button on every attachment multiple field. 
 - Display the button in the stream panel if attachments are found.
-- Choose between Single Mode, Zip Mode and Dual Mode: Single: Downloads each attachment one by one. Zip: Downloads a single archive with all the attachments. Dual: Makes both modes available at the same time.
+
+Choose Between 3 different modes:
+- Single Mode: Downloads each attachment one by one.
+- Zip Mode: Downloads a single archive with all the attachments.
+- Dual Mode: Makes both modes available at the same time.
 
 After installation visit /#Admin/DownloadAllAttachments to enable/disable features.
 
