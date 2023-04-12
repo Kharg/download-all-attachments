@@ -7,12 +7,13 @@
     "tooltips": {
         "DownloadAllAttachments": "Enable the Download All Attachments action.",
         "DownloadAllAttachmentsStream": "Enable the Download All Attachments action for Stream Panel",
-        "DownloadAllAttachmentsMode": "Single: Downloads each attachment one by one. \n\nZip: Downloads a single archive with all the attachments"
+        "DownloadAllAttachmentsMode": "Single: Downloads each attachment one by one. \n\nZip: Downloads a single archive with all the attachments. \n\nDual: Makes both modes available at the same time."
     },
     "options": {
         "DownloadAllAttachmentsMode": {
             "Single": "Single",
-            "Zip": "Zip"
+            "Zip": "Zip",
+            "Dual": "Dual"
         }
     }
 }

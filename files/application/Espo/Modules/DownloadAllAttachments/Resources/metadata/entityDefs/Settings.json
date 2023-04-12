@@ -12,7 +12,7 @@
         },
         "DownloadAllAttachmentsMode": {
             "type": "enum",
-            "options": ["Single", "Zip"],
+            "options": ["Single", "Zip", "Dual"],
             "default": "Zip",
             "tooltip": true
         }
