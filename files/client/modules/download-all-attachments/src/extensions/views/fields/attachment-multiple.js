@@ -22,8 +22,11 @@ extend('download-all-attachments:extensions/views/fields/attachment-multiple', f
 		},
 
 		createDownloadAllAttachmentsZipButton: function(nameHash) {
-			this.$el.find('.attachment-block:last')
-            .append(`
+			let attachmentBlockLast = this.$el.find('.attachment-block:last');
+			let attachmentPreviewLast = this.$el.find('.attachment-preview:last');
+			let targetElement = attachmentBlockLast.length ? attachmentBlockLast : attachmentPreviewLast;
+            
+			targetElement.append(`
             <div id="download-all-button-zip" class="attachment-block">
                 <button id="DownloadAllAttachmentsZip" title="Download All Attachments as Zip" class="DownloadAllAttachments btn btn-default" type="button">
                     <span class="fas fa-file-archive"></span>
@@ -38,14 +41,17 @@ extend('download-all-attachments:extensions/views/fields/attachment-multiple', f
 		},
 
 		createDownloadAllAttachmentsSingleButton: function(nameHash, downloadMode) {
-			let targetElement = (downloadMode === 'Dual') ? this.$el.find('#DownloadAllAttachmentsZip') : this.$el.find('.attachment-block:last');
-            targetElement.after(`
-            <div id="download-all-button-single" class="attachment-block" style="display:inline-block;">
-                <button id="DownloadAllAttachmentsSingle" title="Download All Attachments Individually" class="DownloadAllAttachments btn btn-default" type="button">
-                    <span class="fas fa-download"></span>
-                </button>
-            </div>`
-        );
+			let attachmentBlockLast = this.$el.find('.attachment-block:last');
+			let attachmentPreviewLast = this.$el.find('.attachment-preview:last');
+			let targetElement = (downloadMode === 'Dual') ? this.$el.find('#DownloadAllAttachmentsZip') : (attachmentBlockLast.length ? attachmentBlockLast : attachmentPreviewLast);
+		
+			targetElement.after(`
+				<div id="download-all-button-single" class="attachment-block" style="display:inline-block;">
+					<button id="DownloadAllAttachmentsSingle" title="Download All Attachments Individually" class="DownloadAllAttachments btn btn-default" type="button">
+						<span class="fas fa-download"></span>
+					</button>
+				</div>`
+			);
 
 			let downloadAllAttachmentsSingleButton = this.$el.find('#DownloadAllAttachmentsSingle');
 			downloadAllAttachmentsSingleButton.on('click', () => {
