@@ -1,9 +1,9 @@
 {
     "name": "Download All Attachments",
-    "version": "1.1.1",
+    "version": "1.2.0",
     "type": "extension",
     "acceptableVersions": [
-        ">=7.2.0"
+        ">=8.0.0"
     ],
     "releaseDate": "22/04/2023",
     "author": "Andrew Fontana",
