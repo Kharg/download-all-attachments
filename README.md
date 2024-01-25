@@ -31,8 +31,8 @@ After installation visit /#Admin/DownloadAllAttachments to enable/disable featur
 
 ## Requires
 
-- EspoCRM >= 7.2
-- PHP >= 7.2
+- EspoCRM >= 8.0
+- PHP >= 8.0
 
 Note: This extension has not been tested with other extensions altering the attachment-multiple.js field and may be incompatible.
 
