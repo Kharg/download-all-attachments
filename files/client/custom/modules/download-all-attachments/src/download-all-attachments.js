@@ -1,7 +1,7 @@
 Espo.loader.require('views/fields/attachment-multiple', function(AttachmentMultipleFieldView) {
 
 	const coreSetup = AttachmentMultipleFieldView.prototype.setup,
-		  coreGetValueForDisplay =AttachmentMultipleFieldView.prototype.getValueForDisplay;
+		  coreGetValueForDisplay = AttachmentMultipleFieldView.prototype.getValueForDisplay;
 
 	_.extend(AttachmentMultipleFieldView.prototype, {
 
