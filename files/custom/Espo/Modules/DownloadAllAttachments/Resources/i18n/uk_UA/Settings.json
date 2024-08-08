@@ -1,0 +1,19 @@
+{
+    "fields": {
+        "DownloadAllAttachments": "Ввімкнути завантаження всіх вкладень",
+        "DownloadAllAttachmentsStream": "Ввімкнути завантаження всіх вкладень для потоку",
+        "DownloadAllAttachmentsMode": "Режим завантаження"
+    },
+    "tooltips": {
+        "DownloadAllAttachments": "Ввімкнути можливість завантаження всіх вкладень",
+        "DownloadAllAttachmentsStream": "Ввімкнути можливість завантаження всіх вкладень для потоку",
+        "DownloadAllAttachmentsMode": "Послідовний: Завантаження файлів один за одним. \n\nZip: Завантаження всіх вкладень zip архівом. \n\nПодвійний: Надає можливості перших двох."
+    },
+    "options": {
+        "DownloadAllAttachmentsMode": {
+            "Single": "Послідовний",
+            "Zip": "Zip",
+            "Dual": "Подвійний"
+        }
+    }
+}

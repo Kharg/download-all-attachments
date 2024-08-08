@@ -2,71 +2,81 @@
 
 namespace Espo\Modules\DownloadAllAttachments\EntryPoints;
 
-use Espo\Modules\DownloadAllAttachments\Core\Utils\File\ZipArchive;
+use Espo\Core\Acl;
 use Espo\Core\Api\Request;
 use Espo\Core\Api\Response;
 use Espo\Core\EntryPoint\EntryPoint;
 use Espo\Core\Exceptions\BadRequest;
 use Espo\Core\Exceptions\Forbidden;
 use Espo\Core\Exceptions\NotFoundSilent;
-use Espo\Entities\Attachment as AttachmentEntity;
-use Espo\Core\Acl;
 use Espo\Core\ORM\EntityManager;
+use Espo\Core\Utils\Language;
+use Espo\Entities\Attachment as AttachmentEntity;
+use Espo\Entities\Note as NoteEntity;
+use Espo\Repositories\Attachment as AttachmentRepository;
 use GuzzleHttp\Psr7\Utils;
+use ZipArchive as CoreZipArchive;
 
 class DownloadAll implements EntryPoint
 {
-    protected Acl $acl;
-    protected EntityManager $entityManager;
-
-    public function __construct(Acl $acl, EntityManager $entityManager)
-    {
-        $this->acl = $acl;
-        $this->entityManager = $entityManager;
-    }
+    public function __construct(
+        private Acl $acl,
+        private EntityManager $entityManager,
+        private CoreZipArchive $zipArchiveUtil,
+        private Language $language
+    ){}
 
     public function run(Request $request, Response $response): void
     {
-        $idList = $request->getQueryParams();
-        
-        if (!$idList || !is_array($idList)) {
-            throw new BadRequest();
+        $attachmentIdList = $request->getQueryParams()['attachmentIdList'] ?? null;
+
+        if (!is_array($attachmentIdList)) {
+            throw new BadRequest('No attachment Ids provided');
         }
-    
-        $id = array_values($idList['id']);
-        $i = 0;
-        $zip = new ZipArchive();
-        $filename = 'data/upload/attachments.zip';
-        $res = $zip->open($filename, ZipArchive::CREATE);
+
+        $name = $this->getNameForZipFile(
+            entityType: $request->getQueryParam('entityType'),
+            entityId: $request->getQueryParam('entityId')
+        );
+
+        $uniqueId = uniqid();
+        $filename = "data/upload/attachments$uniqueId.zip";
+
+        $res = $this->zipArchiveUtil->open($filename, CoreZipArchive::CREATE);
         if ($res === true) {
-            foreach ($id as $row) {
+            foreach ($attachmentIdList as $row) {
+
+                /** @var AttachmentEntity $attachment */
                 $attachment = $this->entityManager->getEntity(AttachmentEntity::ENTITY_TYPE, $row);
-    
+
                 if (!$attachment) {
                     throw new NotFoundSilent();
                 }
-    
+
                 if (!$this->acl->checkEntity($attachment)) {
                     throw new Forbidden();
                 }
-    
-                $filePath = $this->entityManager->getRepository(AttachmentEntity::ENTITY_TYPE)->getFilePath($attachment);
-    
+
+                /** @var AttachmentRepository $attachmentRepository */
+                $attachmentRepository = $this->entityManager->getRepository(AttachmentEntity::ENTITY_TYPE);
+
+                $filePath = $attachmentRepository->getFilePath($attachment);
+
                 if (!file_exists($filePath)) {
                     throw new NotFoundSilent();
                 }
-    
+
                 $outputFileName = $attachment->get('name');
                 $outputFileName = str_replace("\"", "\\\"", $outputFileName);
-    
-                $zip->addFile($filePath, $outputFileName);
+
+                $this->zipArchiveUtil->addFile($filePath, $outputFileName);
             }
-    
-            $zip->close();
-    
+
+            $this->zipArchiveUtil->close();
+
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
             $mimeType = finfo_file($finfo, $filename);
-            $name = $request->getQueryParam('name');
+
             $name = preg_replace('/[<>:"\/\\\|\?\*]/', ' ', $name);
             $name = rtrim($name, ". ");
 
@@ -77,21 +87,44 @@ class DownloadAll implements EntryPoint
                 $response->setHeader('Cache-Control', 'private, max-age=120, must-revalidate');
                 $response->setHeader('Pragma', 'no-cache');
             }
-    
+
             $response->setHeader('Content-Type', $mimeType);
             $response->setHeader('Content-Disposition', 'attachment; filename="' . $name . '.zip";');
             $response->setHeader('Accept-Ranges', 'bytes');
             $response->setHeader('Content-Length', (string) filesize($filename));
-    
+
             // Use a stream to set the response body
             $stream = Utils::streamFor(fopen($filename, 'r'));
             $response->setBody($stream);
-    
+
             if (file_exists($filename)) {
                 unlink($filename);
             }
         } else {
             throw new Forbidden();
         }
+    }
+
+    private function getNameForZipFile(?string $entityType, ?string $entityId): string
+    {
+        $name = null;
+
+        if ($entityType === NoteEntity::ENTITY_TYPE) {
+            $entityId = null;
+        }
+
+        if ($entityType && $entityId) {
+            try {
+                $name = $this->entityManager->getEntityById($entityType, $entityId)?->get('name');
+            } catch (\Throwable) {}
+        } else {
+            $name = $this->language->translateLabel(AttachmentEntity::ENTITY_TYPE, 'scopeNamesPlural');
+        }
+
+        if (!$name) {
+            $name = 'Attachments';
+        }
+
+        return $name;
     }
 }

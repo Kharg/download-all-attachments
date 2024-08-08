@@ -1,98 +1,126 @@
-Espo.require("views/fields/attachment-multiple", function(Dep) {
-    const extend = Dep.prototype.afterRender;
-    _.extend(Dep.prototype, {
-		createDownloadAllAttachmentsButton: function(mode) {
-			if ((mode === 'detail' && this.isDetailMode()) || (mode === 'list' && this.isListMode() && this.entityType === 'Note')) {
-				let nameHash = this.nameHash;
-				let downloadMode = this.getConfig().get('DownloadAllAttachmentsMode');
+Espo.loader.require('views/fields/attachment-multiple', function(AttachmentMultipleFieldView) {
 
-				if (downloadMode === 'Zip') {
-					this.createDownloadAllAttachmentsZipButton(nameHash);
-				}
+	const s = AttachmentMultipleFieldView.prototype.setup,
+		g =AttachmentMultipleFieldView.prototype.getValueForDisplay;
 
-				if (downloadMode === 'Single') {
-					this.createDownloadAllAttachmentsSingleButton(nameHash);
-				}
+	_.extend(AttachmentMultipleFieldView.prototype, {
 
-				if (downloadMode === 'Dual') {
-					this.createDownloadAllAttachmentsZipButton(nameHash);
-					this.createDownloadAllAttachmentsSingleButton(nameHash, downloadMode);
-				}
+		setup() {
+			s.call(this);
+			this.addActionHandler('downloadAllIndividually', () => this.actionDownloadAllIndividually());
+			this.addActionHandler('downloadAllAsZip', () => this.actionDownloadAllAsZip());
+		},
+
+		actionDownloadAllIndividually() {
+			let attachmentsIds = this.model.get(this.idsName);
+			if (!attachmentsIds || attachmentsIds.length === 0) {
+				return;
+			}
+			for (let id of attachmentsIds) {
+				let separateUrl = this.getBasePath() + '?entryPoint=ForceDownload&id=' + id;
+				let iframe = document.createElement('iframe');
+				iframe.style.display = 'none';
+				iframe.src = separateUrl;
+				document.body.appendChild(iframe);
+				iframe.onload = function() {
+					document.body.removeChild(iframe);
+				};
 			}
 		},
 
-		createDownloadAllAttachmentsZipButton: function(nameHash) {
-			let attachmentBlockLast = this.$el.find('.attachment-block:last');
-			let attachmentPreviewLast = this.$el.find('.attachment-preview:last');
-			let targetElement = attachmentBlockLast.length ? attachmentBlockLast : attachmentPreviewLast;
-            
-			targetElement.append(`
-            <div id="download-all-button-zip" class="attachment-block">
-                <button id="DownloadAllAttachmentsZip" title="Download All Attachments as Zip" class="DownloadAllAttachments btn btn-default" type="button">
-                    <span class="fas fa-file-archive"></span>
-                </button>
-            </div>`
-        );
-
-			let downloadAllAttachmentsZipButton = this.$el.find('#DownloadAllAttachmentsZip');
-			downloadAllAttachmentsZipButton.on('click', () => {
-				this.downloadAllAttachments(nameHash, 'Zip');
-			});
+		actionDownloadAllAsZip() {
+			let attachmentsIds = this.model.get(this.idsName);
+			if (!attachmentsIds || attachmentsIds.length === 0) {
+				return;
+			}
+			let url = this.getBasePath() + `?entryPoint=DownloadAll&entityType=${this.model.entityType}&entityId=${this.model.id}`;
+			for (let id of attachmentsIds) {
+				url += `&attachmentIdList[]=${id}`;
+			}
+			window.location.href = url;
 		},
 
-		createDownloadAllAttachmentsSingleButton: function(nameHash, downloadMode) {
-			let attachmentBlockLast = this.$el.find('.attachment-block:last');
-			let attachmentPreviewLast = this.$el.find('.attachment-preview:last');
-			let targetElement = (downloadMode === 'Dual') ? this.$el.find('#DownloadAllAttachmentsZip') : (attachmentBlockLast.length ? attachmentBlockLast : attachmentPreviewLast);
-		
-			targetElement.after(`
-				<div id="download-all-button-single" class="attachment-block" style="display:inline-block;">
-					<button id="DownloadAllAttachmentsSingle" title="Download All Attachments Individually" class="DownloadAllAttachments btn btn-default" type="button">
-						<span class="fas fa-download"></span>
-					</button>
-				</div>`
-			);
+		getValueForDisplay() {
+			let value = g.call(this);
+			if (!value || (!this.isDownloadAllAttachmentsInDetailEnabled() && !this.isDownloadAllAttachmentsInStreamEnabled())) {
+				return value;
+			}
+			let buttons = [];
+			if (this.isToAddDownloadAllAsZipButton()) {
+				let title = this.translate('Download all as zip');
+				buttons.push(
+					$('<div>')
+						.append(
+							$('<button>', {
+								title: title,
+								class: 'btn btn-default btn-icon',
+								type: 'button',
+								'data-action': 'downloadAllAsZip'
+							}).append($('<span>', {
+								class: 'fas fa-file-archive'
+							}))
+						)
+				);
+			}
+			if (this.isToAddDownloadAllIndividuallyButton()) {
+				let title = this.translate('Download all individually');
 
-			let downloadAllAttachmentsSingleButton = this.$el.find('#DownloadAllAttachmentsSingle');
-			downloadAllAttachmentsSingleButton.on('click', () => {
-				this.downloadAllAttachments(nameHash, 'Single');
-			});
+				buttons.push(
+					$('<div>')
+						.append(
+							$('<button>', {
+								title: title,
+								class: 'btn btn-default btn-icon',
+								type: 'button',
+								'data-action': 'downloadAllIndividually'
+							}).append($('<span>', {
+								class: 'fas fa-download'
+							}))
+						)
+				);
+			}
+			const $container = $('<div>')
+				.append(value)
+				.append(
+					$('<div>')
+						.addClass('buttons-panel margin floated-row clearfix')
+						.append(buttons)
+				);
+
+			return $container.get(0).innerHTML;
 		},
 
-		downloadAllAttachments: function(nameHash, downloadMode) {
-			let filename = (this.entityType === 'Note') ? 'Attachments' : this.model.get('name');
-			let url = this.getBasePath();
-
-			if (downloadMode === 'Zip') {
-				url += '?entryPoint=DownloadAll&name=' + filename;
-				let i = 0;
-				for (let id in nameHash) {
-					url += '&id[' + i + ']=' + id;
-					i++;
-				}
-				window.open(url, '_blank');
-			} else if (downloadMode === 'Single') {
-				for (let id in nameHash) {
-					let separateUrl = url + '?entryPoint=ForceDownload&id=' + id;
-					let iframe = document.createElement('iframe');
-					iframe.style.display = 'none';
-					iframe.src = separateUrl;
-					document.body.appendChild(iframe);
-					iframe.onload = function() {
-						document.body.removeChild(iframe);
-					};
-				}
+		isToAddDownloadAllAsZipButton() {
+			let mode = this.getDownloadAllAttachmentsMode();
+			if (!['Zip', 'Dual'].includes(mode)) {
+				return false;
 			}
+			return this.isToAddButtonBase();
 		},
 
-		afterRender: function() {
-            extend.call(this);
-			if (this.getConfig().get('DownloadAllAttachments')) {
-				this.createDownloadAllAttachmentsButton('detail');
+		isToAddDownloadAllIndividuallyButton() {
+			let mode = this.getDownloadAllAttachmentsMode();
+			if (!['Single', 'Dual'].includes(mode)) {
+				return false;
 			}
-			if (this.getConfig().get('DownloadAllAttachmentsStream')) {
-				this.createDownloadAllAttachmentsButton('list');
-			}
+			return this.isToAddButtonBase();
+		},
+
+		isToAddButtonBase() {
+			return (this.isDownloadAllAttachmentsInDetailEnabled() && this.isDetailMode())
+				|| (this.isDownloadAllAttachmentsInStreamEnabled() && this.isListMode() && this.entityType === 'Note');
+		},
+
+		getDownloadAllAttachmentsMode() {
+			return this.getConfig().get('DownloadAllAttachmentsMode');
+		},
+
+		isDownloadAllAttachmentsInDetailEnabled() {
+			return !!this.getConfig().get('DownloadAllAttachments');
+		},
+
+		isDownloadAllAttachmentsInStreamEnabled() {
+			return !!this.getConfig().get('DownloadAllAttachmentsStream');
 		}
-    })
+	})
 })
