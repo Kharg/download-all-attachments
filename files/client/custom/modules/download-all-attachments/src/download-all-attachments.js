@@ -1,12 +1,12 @@
 Espo.loader.require('views/fields/attachment-multiple', function(AttachmentMultipleFieldView) {
 
-	const s = AttachmentMultipleFieldView.prototype.setup,
-		g =AttachmentMultipleFieldView.prototype.getValueForDisplay;
+	const coreSetup = AttachmentMultipleFieldView.prototype.setup,
+		  coreGetValueForDisplay =AttachmentMultipleFieldView.prototype.getValueForDisplay;
 
 	_.extend(AttachmentMultipleFieldView.prototype, {
 
 		setup() {
-			s.call(this);
+			coreSetup.call(this);
 			this.addActionHandler('downloadAllIndividually', () => this.actionDownloadAllIndividually());
 			this.addActionHandler('downloadAllAsZip', () => this.actionDownloadAllAsZip());
 		},
@@ -41,7 +41,7 @@ Espo.loader.require('views/fields/attachment-multiple', function(AttachmentMulti
 		},
 
 		getValueForDisplay() {
-			let value = g.call(this);
+			let value = coreGetValueForDisplay.call(this);
 			if (!value || (!this.isDownloadAllAttachmentsInDetailEnabled() && !this.isDownloadAllAttachmentsInStreamEnabled())) {
 				return value;
 			}
